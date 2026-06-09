@@ -67,3 +67,5 @@ void crearReporte(string directorio, List<Archivo> listaArchivos)
     }
     File.WriteAllLines(directorioArchivo, csv);
 }
+
+
