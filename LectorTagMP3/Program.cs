@@ -14,28 +14,34 @@ bool existe = File.Exists(directorio);
 byte[] buffer = new byte[128];
 if (File.Exists(directorio))
 {
-    FileStream archivo = new FileStream(directorio, FileMode.Open);
+    using(FileStream archivo = new FileStream(directorio, FileMode.Open, FileAccess.Read)){
 
-    Encoding latin1 = Encoding.GetEncoding("latin1");
+        Encoding latin1 = Encoding.GetEncoding("latin1");
+        if (archivo.Length > 128)
+        {
+            archivo.Seek(-128, SeekOrigin.End);
+            archivo.Read(buffer, 0 , 128);
 
-    archivo.Seek(-128, SeekOrigin.End);
-    archivo.Read(buffer, 0 , 128);
+            string identificador = latin1.GetString(buffer, 0, 3);
 
-    string identificador = latin1.GetString(buffer, 0, 3);
+            if(identificador == "TAG")
+            {
+                string tagCompleto = latin1.GetString(buffer, 0, 128);
 
-    if(identificador == "TAG")
-    {
-        string tagCompleto = latin1.GetString(buffer, 0, 128);
-
-        string titulo = tagCompleto.Substring(3, 30);
-        string artista = tagCompleto.Substring(33, 30);
-        string album = tagCompleto.Substring(63, 30);
-        string anio = tagCompleto.Substring(93, 4);
-        Console.WriteLine($"Titulo: {titulo}. Artista: {artista}. Album: {album}. Año: {anio}");
-    } else
-    {
-        Console.WriteLine($"No se ha encontrado un TAG de ID3v1 en el archivo leido en {directorio}");
-    }  
+                string titulo = tagCompleto.Substring(3, 30);
+                string artista = tagCompleto.Substring(33, 30);
+                string album = tagCompleto.Substring(63, 30);
+                string anio = tagCompleto.Substring(93, 4);
+                Console.WriteLine($"Titulo: {titulo}. Artista: {artista}. Album: {album}. Año: {anio}");
+            } else
+            {
+                Console.WriteLine($"No se ha encontrado un TAG de ID3v1 en el archivo leido en {directorio}");
+            }    
+        } else
+        {
+            Console.WriteLine("El archivo no tiene la cantidad de bits necesarios");
+        }
+    }
 } else
 {
     Console.WriteLine("No existe una cancion en el directorio proporcionado");
